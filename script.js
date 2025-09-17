@@ -73,7 +73,7 @@ async function calcularFrete() {
 - Distância: ${km.toFixed(2)} km
 - Preço estimado: R$${preco}`;
 
-    const numeroWhatsapp = '5511999999999'; // Substitua pelo número real do Venancio (formato: 55DDDnumero sem espaços)
+    const numeroWhatsapp = '5512974042344'; // Substitua pelo número real do Venancio (formato: 55DDDnumero sem espaços)
     const url = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
 
