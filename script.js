@@ -50,9 +50,9 @@ async function preencherEndereco(tipo) {
 const bairrosCoords = {
   'centro': { lat: -22.8163, lng: -45.1925 },
   'campo do galvão': { lat: -22.8075, lng: -45.1938 },
-  'campo do galvao': { lat: -22.8075, lng: -45.1938 }, // Variação sem acento
+  'campo do galvao': { lat: -22.8075, lng: -45.1938 },
   'vila paraíba': { lat: -22.8090, lng: -45.1890 },
-  'vila paraiba': { lat: -22.8090, lng: -45.1890 }, // Variação sem acento
+  'vila paraiba': { lat: -22.8090, lng: -45.1890 },
   'jardim do vale': { lat: -22.8030, lng: -45.1850 },
   'parque do sol': { lat: -22.8050, lng: -45.1950 },
   'cohab bandeirantes': { lat: -22.8000, lng: -45.2000 },
@@ -64,24 +64,52 @@ const bairrosCoords = {
   'pedrinhas': { lat: -22.8300, lng: -45.1700 },
   'rocinha': { lat: -22.8400, lng: -45.1500 },
   'nova guará': { lat: -22.8119, lng: -45.1871 },
-  'nova guara': { lat: -22.8119, lng: -45.1871 }, // Variação sem acento
+  'nova guara': { lat: -22.8119, lng: -45.1871 },
   'parque são francisco': { lat: -22.8020, lng: -45.1980 },
-  'parque sao francisco': { lat: -22.8020, lng: -45.1980 }, // Variação sem acento
+  'parque sao francisco': { lat: -22.8020, lng: -45.1980 },
   'santa luzia': { lat: -22.8200, lng: -45.1800 },
   'são manoel': { lat: -22.8150, lng: -45.1750 },
-  'sao manoel': { lat: -22.8150, lng: -45.1750 }, // Variação sem acento
+  'sao manoel': { lat: -22.8150, lng: -45.1750 },
   'jardim são josé': { lat: -22.8100, lng: -45.1950 },
-  'jardim sao jose': { lat: -22.8100, lng: -45.1950 }, // Variação sem acento
-  'residencial santa rita': { lat: -22.8120, lng: -45.1850 }
+  'jardim sao jose': { lat: -22.8100, lng: -45.1950 },
+  'residencial santa rita': { lat: -22.8120, lng: -45.1850 },
+  'pedregulho': { lat: -22.8130, lng: -45.1900 },
+  'chácara sábia': { lat: -22.8250, lng: -45.1650 },
+  'chacara sabia': { lat: -22.8250, lng: -45.1650 }
 };
 
 function normalizeBairro(bairro) {
   return bairro
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+async function validarBairro(tipo, cep, bairro) {
+  const normalizedBairro = normalizeBairro(bairro);
+  if (bairrosCoords[normalizedBairro]) {
+    return normalizedBairro;
+  }
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await response.json();
+    if (data.erro || data.localidade !== 'Guaratinguetá' || data.uf !== 'SP') {
+      throw new Error('CEP inválido ou fora de Guaratinguetá');
+    }
+    const bairroViaCEP = normalizeBairro(data.bairro || '');
+    if (bairroViaCEP && bairrosCoords[bairroViaCEP]) {
+      return bairroViaCEP;
+    }
+  } catch (error) {
+    console.error('Erro ao validar bairro com ViaCEP:', error);
+  }
+
+  const bairrosDisponiveis = Object.keys(bairrosCoords).filter(b => !b.includes(' ')).join(', ');
+  alert(`Não encontrei o bairro "${bairro}" para ${tipo}. Verifique se preencheu corretamente. Bairros disponíveis: ${bairrosDisponiveis}.`);
+  throw new Error('Bairro não mapeado');
 }
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
@@ -114,12 +142,12 @@ async function calcularFrete() {
   const ruaOrigem = document.getElementById('ruaOrigem').value;
   const numeroOrigem = document.getElementById('numeroOrigem').value;
   const complementoOrigem = document.getElementById('complementoOrigem').value;
-  const bairroOrigem = normalizeBairro(document.getElementById('bairroOrigem').value);
+  const bairroOrigemInput = document.getElementById('bairroOrigem').value;
   const cepDestino = document.getElementById('cepDestino').value.replace(/\D/g, '');
   const ruaDestino = document.getElementById('ruaDestino').value;
   const numeroDestino = document.getElementById('numeroDestino').value;
   const complementoDestino = document.getElementById('complementoDestino').value;
-  const bairroDestino = normalizeBairro(document.getElementById('bairroDestino').value);
+  const bairroDestinoInput = document.getElementById('bairroDestino').value;
   const data = document.getElementById('data').value;
   const horario = document.getElementById('horario').value;
   const nome = document.getElementById('nome').value;
@@ -142,7 +170,7 @@ async function calcularFrete() {
     alert('Preencha o número de origem!');
     return;
   }
-  if (!bairroOrigem) {
+  if (!bairroOrigemInput) {
     alert('Preencha o bairro de origem!');
     return;
   }
@@ -158,7 +186,7 @@ async function calcularFrete() {
     alert('Preencha o número de destino!');
     return;
   }
-  if (!bairroDestino) {
+  if (!bairroDestinoInput) {
     alert('Preencha o bairro de destino!');
     return;
   }
@@ -180,17 +208,11 @@ async function calcularFrete() {
   }
 
   try {
-    let coordsOrigem = bairrosCoords[bairroOrigem];
-    if (!coordsOrigem) {
-      alert('Bairro de origem não reconhecido. Usando Centro para estimativa. Bairros disponíveis: Centro, Campo do Galvão, Vila Paraíba, Jardim do Vale, entre outros.');
-      coordsOrigem = bairrosCoords['centro'];
-    }
+    const bairroOrigem = await validarBairro('origem', cepOrigem, bairroOrigemInput);
+    const bairroDestino = await validarBairro('destino', cepDestino, bairroDestinoInput);
 
-    let coordsDestino = bairrosCoords[bairroDestino];
-    if (!coordsDestino) {
-      alert('Bairro de destino não reconhecido. Usando Centro para estimativa. Bairros disponíveis: Centro, Campo do Galvão, Vila Paraíba, Jardim do Vale, entre outros.');
-      coordsDestino = bairrosCoords['centro'];
-    }
+    const coordsOrigem = bairrosCoords[bairroOrigem];
+    const coordsDestino = bairrosCoords[bairroDestino];
 
     const km = haversineDistance(coordsOrigem.lat, coordsOrigem.lng, coordsDestino.lat, coordsDestino.lng);
     const preco = getPreco(km);
@@ -213,7 +235,7 @@ async function calcularFrete() {
     console.log('Mensagem gerada:', mensagemGlobal); // Para debug
   } catch (error) {
     console.error('Erro ao calcular:', error);
-    alert('Erro: ' + error.message);
+    // O alerta já foi exibido em validarBairro
   }
 }
 
