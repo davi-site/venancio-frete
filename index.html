@@ -78,9 +78,13 @@
         <label class="block mb-2">Seu telefone:</label>
         <input type="tel" class="w-full p-2 mb-4 border rounded" id="telefone" placeholder="Ex: (12) 99777-8888">
 
-        <button type="button" onclick="calcularFrete()" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">Calcular e Enviar para WhatsApp</button>
+        <button type="button" onclick="calcularFrete()" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">Calcular Preço</button>
       </form>
       <p id="resultado" class="mt-4 text-center font-bold"></p>
+      <div id="confirmPanel" class="hidden mt-4 text-center">
+        <button type="button" onclick="enviarWhatsapp()" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 mr-4">Sim, prosseguir para WhatsApp</button>
+        <button type="button" onclick="recarregarPagina()" class="bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700">Não, nova solicitação</button>
+      </div>
     </div>
   </section>
 
