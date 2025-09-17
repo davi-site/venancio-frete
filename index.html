@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frete Venancio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_API_AQUI&libraries=places"></script> <!-- Substitua SUA_CHAVE_API_AQUI pela chave do Google Maps -->
+  <script src="script.js" defer></script>
+</head>
+<body class="bg-gray-100 font-sans">
+  <nav class="bg-blue-600 text-white p-4">
+    <div class="container mx-auto">
+      <h1 class="text-2xl font-bold">Frete com Venancio</h1>
+    </div>
+  </nav>
+
+  <section class="py-10">
+    <div class="container mx-auto max-w-lg p-4 bg-white rounded shadow">
+      <h2 class="text-2xl font-bold mb-4 text-center">Solicite seu Frete</h2>
+      <form id="freteForm">
+        <label class="block mb-2">Itens a transportar (selecione múltiplos):</label>
+        <select multiple class="w-full p-2 mb-4 border rounded" id="itens">
+          <option value="Cama">Cama</option>
+          <option value="Fogão">Fogão</option>
+          <option value="Máquina de lavar">Máquina de lavar</option>
+          <option value="Geladeira">Geladeira</option>
+          <option value="Sofá">Sofá</option>
+          <option value="Mesa">Mesa</option>
+          <option value="Cadeiras">Cadeiras</option>
+          <option value="TV">TV</option>
+          <option value="Armário">Armário</option>
+          <option value="Colchão">Colchão</option>
+          <option value="Bicicleta">Bicicleta</option>
+          <option value="Eletrodomésticos diversos">Eletrodomésticos diversos</option>
+          <option value="Materiais de construção">Materiais de construção</option>
+        </select>
+
+        <label class="block mb-2">Outros itens:</label>
+        <textarea class="w-full p-2 mb-4 border rounded" id="outrosItens"></textarea>
+
+        <label class="block mb-2">Endereço de origem:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="origem" placeholder="Ex: Rua Exemplo, 123, Cidade - UF">
+
+        <label class="block mb-2">Endereço de destino:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="destino" placeholder="Ex: Avenida Outra, 456, Cidade - UF">
+
+        <label class="block mb-2">Data:</label>
+        <input type="date" class="w-full p-2 mb-4 border rounded" id="data">
+
+        <label class="block mb-2">Horário aproximado:</label>
+        <input type="time" class="w-full p-2 mb-4 border rounded" id="horario">
+
+        <label class="block mb-2">Seu nome:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="nome">
+
+        <label class="block mb-2">Seu telefone:</label>
+        <input type="tel" class="w-full p-2 mb-4 border rounded" id="telefone" placeholder="Ex: (11) 99999-9999">
+
+        <button type="button" onclick="calcularFrete()" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">Calcular e Enviar para WhatsApp</button>
+      </form>
+      <p id="resultado" class="mt-4 text-center font-bold"></p>
+    </div>
+  </section>
+
+  <footer class="bg-blue-600 text-white text-center p-4 mt-10">
+    <p>&copy; 2025 Frete Venancio. Todos os direitos reservados.</p>
+  </footer>
+</body>
+</html>
