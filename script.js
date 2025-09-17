@@ -47,6 +47,45 @@ async function preencherEndereco(tipo) {
   }
 }
 
+const bairrosCoords = {
+  'centro': { lat: -22.8163, lng: -45.1925 },
+  'campo do galvão': { lat: -22.8075, lng: -45.1938 },
+  'vila paraíba': { lat: -22.8090, lng: -45.1890 },
+  'jardim do vale': { lat: -22.8030, lng: -45.1850 },
+  'parque do sol': { lat: -22.8050, lng: -45.1950 },
+  'cohab bandeirantes': { lat: -22.8000, lng: -45.2000 },
+  'portal das colinas': { lat: -22.8100, lng: -45.1800 },
+  'jardim primavera': { lat: -22.8150, lng: -45.2000 },
+  'vila santa rita': { lat: -22.8119, lng: -45.1871 },
+  'jardim rony': { lat: -22.8050, lng: -45.1900 },
+  'gomeral': { lat: -22.8500, lng: -45.1600 },
+  'pedrinhas': { lat: -22.8300, lng: -45.1700 },
+  'rocinha': { lat: -22.8400, lng: -45.1500 },
+  'nova guará': { lat: -22.8119, lng: -45.1871 },
+  'parque são francisco': { lat: -22.8020, lng: -45.1980 }
+  // Adicione mais bairros conforme necessário, com coordenadas reais obtidas de mapas
+};
+
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+function getPreco(km) {
+  for (let faixa of faixas) {
+    if (km >= faixa.min && km < faixa.max) {
+      return faixa.preco;
+    }
+  }
+  return 0;
+}
+
 async function calcularFrete() {
   const itens = Array.from(document.querySelectorAll('input[name="itens"]:checked')).map(input => input.value);
   const outroCheckbox = document.getElementById('outroCheckbox').checked;
@@ -55,12 +94,12 @@ async function calcularFrete() {
   const ruaOrigem = document.getElementById('ruaOrigem').value;
   const numeroOrigem = document.getElementById('numeroOrigem').value;
   const complementoOrigem = document.getElementById('complementoOrigem').value;
-  const bairroOrigem = document.getElementById('bairroOrigem').value;
+  const bairroOrigem = document.getElementById('bairroOrigem').value.trim().toLowerCase();
   const cepDestino = document.getElementById('cepDestino').value.replace(/\D/g, '');
   const ruaDestino = document.getElementById('ruaDestino').value;
   const numeroDestino = document.getElementById('numeroDestino').value;
   const complementoDestino = document.getElementById('complementoDestino').value;
-  const bairroDestino = document.getElementById('bairroDestino').value;
+  const bairroDestino = document.getElementById('bairroDestino').value.trim().toLowerCase();
   const data = document.getElementById('data').value;
   const horario = document.getElementById('horario').value;
   const nome = document.getElementById('nome').value;
@@ -121,6 +160,28 @@ async function calcularFrete() {
   }
 
   try {
+    let coordsOrigem = bairrosCoords[bairroOrigem];
+    if (!coordsOrigem) {
+      alert('Bairro de origem não mapeado. Usando coordenadas do Centro para estimativa.');
+      coordsOrigem = bairrosCoords['centro'];
+    }
+
+    let coordsDestino = bairrosCoords[bairroDestino];
+    if (!coordsDestino) {
+      alert('Bairro de destino não mapeado. Usando coordenadas do Centro para estimativa.');
+      coordsDestino = bairrosCoords['centro'];
+    }
+
+    const km = haversineDistance(coordsOrigem.lat, coordsOrigem.lng, coordsDestino.lat, coordsDestino.lng);
+    const preco = getPreco(km);
+
+    document.getElementById('resultado').textContent = `Distância estimada: ${km.toFixed(2)} km | Preço estimado: R$${preco}`;
+
+    const confirmar = confirm(`O preço estimado é R$${preco}. Deseja prosseguir para o WhatsApp?`);
+    if (!confirmar) {
+      return;
+    }
+
     const mensagem = `Solicitação de Frete:
 - Itens: ${itens.join(', ')}${outros ? `, Outros: ${outros}` : ''}
 - Origem: ${ruaOrigem}, ${numeroOrigem}${complementoOrigem ? `, ${complementoOrigem}` : ''}, ${bairroOrigem}, CEP ${cepOrigem}
@@ -128,17 +189,19 @@ async function calcularFrete() {
 - Data: ${data}
 - Horário: ${horario}
 - Nome: ${nome}
-- Telefone: ${telefone}`;
+- Telefone: ${telefone}
+- Distância estimada: ${km.toFixed(2)} km
+- Preço estimado: R$${preco}`;
 
     console.log('Mensagem gerada:', mensagem); // Para debug
     const numeroWhatsapp = '5512974042344'; // Número de teste
     const url = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
 
-    document.getElementById('resultado').textContent = 'Mensagem enviada para o WhatsApp!';
+    document.getElementById('resultado').textContent += ' | Mensagem enviada!';
   } catch (error) {
-    console.error('Erro ao enviar para WhatsApp:', error);
-    alert('Erro ao enviar para WhatsApp: ' + error.message);
+    console.error('Erro ao calcular e enviar:', error);
+    alert('Erro: ' + error.message);
   }
 }
 
