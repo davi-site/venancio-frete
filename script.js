@@ -63,7 +63,6 @@ const bairrosCoords = {
   'rocinha': { lat: -22.8400, lng: -45.1500 },
   'nova guará': { lat: -22.8119, lng: -45.1871 },
   'parque são francisco': { lat: -22.8020, lng: -45.1980 }
-  // Adicione mais bairros conforme necessário, com coordenadas reais obtidas de mapas
 };
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
@@ -85,6 +84,8 @@ function getPreco(km) {
   }
   return 0;
 }
+
+let mensagemGlobal = '';
 
 async function calcularFrete() {
   const itens = Array.from(document.querySelectorAll('input[name="itens"]:checked')).map(input => input.value);
@@ -176,13 +177,10 @@ async function calcularFrete() {
     const preco = getPreco(km);
 
     document.getElementById('resultado').textContent = `Distância estimada: ${km.toFixed(2)} km | Preço estimado: R$${preco}`;
+    document.getElementById('resultado').classList.remove('hidden');
+    document.getElementById('confirmPanel').classList.remove('hidden');
 
-    const confirmar = confirm(`O preço estimado é R$${preco}. Deseja prosseguir para o WhatsApp?`);
-    if (!confirmar) {
-      return;
-    }
-
-    const mensagem = `Solicitação de Frete:
+    mensagemGlobal = `Solicitação de Frete:
 - Itens: ${itens.join(', ')}${outros ? `, Outros: ${outros}` : ''}
 - Origem: ${ruaOrigem}, ${numeroOrigem}${complementoOrigem ? `, ${complementoOrigem}` : ''}, ${bairroOrigem}, CEP ${cepOrigem}
 - Destino: ${ruaDestino}, ${numeroDestino}${complementoDestino ? `, ${complementoDestino}` : ''}, ${bairroDestino}, CEP ${cepDestino}
@@ -193,16 +191,27 @@ async function calcularFrete() {
 - Distância estimada: ${km.toFixed(2)} km
 - Preço estimado: R$${preco}`;
 
-    console.log('Mensagem gerada:', mensagem); // Para debug
-    const numeroWhatsapp = '5512974042344'; // Número de teste
-    const url = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
-
-    document.getElementById('resultado').textContent += ' | Mensagem enviada!';
+    console.log('Mensagem gerada:', mensagemGlobal); // Para debug
   } catch (error) {
-    console.error('Erro ao calcular e enviar:', error);
+    console.error('Erro ao calcular:', error);
     alert('Erro: ' + error.message);
   }
+}
+
+function enviarWhatsapp() {
+  const numeroWhatsapp = '5512974042344'; // Número de teste
+  const url = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${encodeURIComponent(mensagemGlobal)}`;
+  window.open(url, '_blank');
+  document.getElementById('resultado').textContent += ' | Mensagem enviada!';
+  document.getElementById('confirmPanel').classList.add('hidden');
+}
+
+function recarregarPagina() {
+  document.getElementById('freteForm').reset();
+  document.getElementById('outrosItens').classList.add('hidden');
+  document.getElementById('outroCheckbox').checked = false;
+  document.getElementById('resultado').textContent = '';
+  document.getElementById('confirmPanel').classList.add('hidden');
 }
 
 function loginAdmin() {
