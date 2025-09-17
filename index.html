@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frete Venancio</title>
+  <title>Frete Venancio - Guaratinguetá</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="script.js" defer></script>
 </head>
@@ -20,7 +20,7 @@
 
   <section class="py-10">
     <div class="container mx-auto max-w-lg p-4 bg-white rounded shadow">
-      <h2 class="text-2xl font-bold mb-4 text-center">Solicite seu Frete</h2>
+      <h2 class="text-2xl font-bold mb-4 text-center">Solicite seu Frete - Guaratinguetá</h2>
       <form id="freteForm">
         <label class="block mb-2 font-semibold">Itens a transportar:</label>
         <div class="grid grid-cols-2 gap-2 mb-4">
@@ -42,11 +42,29 @@
         <label class="block mb-2"><input type="checkbox" id="outroCheckbox" class="mr-2">Outro?</label>
         <textarea id="outrosItens" class="w-full p-2 mb-4 border rounded hidden" placeholder="Descreva outros itens"></textarea>
 
-        <label class="block mb-2">CEP de origem:</label>
-        <input type="text" class="w-full p-2 mb-4 border rounded" id="origem" placeholder="Ex: 12345-678">
+        <h3 class="font-semibold mb-2">Endereço de Origem</h3>
+        <label class="block mb-2">CEP (Guaratinguetá):</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="cepOrigem" placeholder="Ex: 12500-000" onblur="preencherEndereco('origem')">
+        <label class="block mb-2">Rua:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="ruaOrigem" placeholder="Ex: Rua Exemplo">
+        <label class="block mb-2">Número:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="numeroOrigem" placeholder="Ex: 123">
+        <label class="block mb-2">Complemento (opcional):</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="complementoOrigem" placeholder="Ex: Apto 10">
+        <label class="block mb-2">Bairro:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="bairroOrigem" placeholder="Ex: Centro">
 
-        <label class="block mb-2">CEP de destino:</label>
-        <input type="text" class="w-full p-2 mb-4 border rounded" id="destino" placeholder="Ex: 98765-432">
+        <h3 class="font-semibold mb-2">Endereço de Destino</h3>
+        <label class="block mb-2">CEP (Guaratinguetá):</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="cepDestino" placeholder="Ex: 12500-000" onblur="preencherEndereco('destino')">
+        <label class="block mb-2">Rua:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="ruaDestino" placeholder="Ex: Avenida Outra">
+        <label class="block mb-2">Número:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="numeroDestino" placeholder="Ex: 456">
+        <label class="block mb-2">Complemento (opcional):</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="complementoDestino" placeholder="Ex: Casa 2">
+        <label class="block mb-2">Bairro:</label>
+        <input type="text" class="w-full p-2 mb-4 border rounded" id="bairroDestino" placeholder="Ex: Jardim">
 
         <label class="block mb-2">Data:</label>
         <input type="date" class="w-full p-2 mb-4 border rounded" id="data">
@@ -58,7 +76,7 @@
         <input type="text" class="w-full p-2 mb-4 border rounded" id="nome">
 
         <label class="block mb-2">Seu telefone:</label>
-        <input type="tel" class="w-full p-2 mb-4 border rounded" id="telefone" placeholder="Ex: (11) 99999-9999">
+        <input type="tel" class="w-full p-2 mb-4 border rounded" id="telefone" placeholder="Ex: (12) 99777-8888">
 
         <button type="button" onclick="calcularFrete()" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">Calcular e Enviar para WhatsApp</button>
       </form>
