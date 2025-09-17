@@ -50,7 +50,9 @@ async function preencherEndereco(tipo) {
 const bairrosCoords = {
   'centro': { lat: -22.8163, lng: -45.1925 },
   'campo do galvão': { lat: -22.8075, lng: -45.1938 },
+  'campo do galvao': { lat: -22.8075, lng: -45.1938 }, // Variação sem acento
   'vila paraíba': { lat: -22.8090, lng: -45.1890 },
+  'vila paraiba': { lat: -22.8090, lng: -45.1890 }, // Variação sem acento
   'jardim do vale': { lat: -22.8030, lng: -45.1850 },
   'parque do sol': { lat: -22.8050, lng: -45.1950 },
   'cohab bandeirantes': { lat: -22.8000, lng: -45.2000 },
@@ -62,8 +64,25 @@ const bairrosCoords = {
   'pedrinhas': { lat: -22.8300, lng: -45.1700 },
   'rocinha': { lat: -22.8400, lng: -45.1500 },
   'nova guará': { lat: -22.8119, lng: -45.1871 },
-  'parque são francisco': { lat: -22.8020, lng: -45.1980 }
+  'nova guara': { lat: -22.8119, lng: -45.1871 }, // Variação sem acento
+  'parque são francisco': { lat: -22.8020, lng: -45.1980 },
+  'parque sao francisco': { lat: -22.8020, lng: -45.1980 }, // Variação sem acento
+  'santa luzia': { lat: -22.8200, lng: -45.1800 },
+  'são manoel': { lat: -22.8150, lng: -45.1750 },
+  'sao manoel': { lat: -22.8150, lng: -45.1750 }, // Variação sem acento
+  'jardim são josé': { lat: -22.8100, lng: -45.1950 },
+  'jardim sao jose': { lat: -22.8100, lng: -45.1950 }, // Variação sem acento
+  'residencial santa rita': { lat: -22.8120, lng: -45.1850 }
 };
+
+function normalizeBairro(bairro) {
+  return bairro
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Raio da Terra em km
@@ -95,12 +114,12 @@ async function calcularFrete() {
   const ruaOrigem = document.getElementById('ruaOrigem').value;
   const numeroOrigem = document.getElementById('numeroOrigem').value;
   const complementoOrigem = document.getElementById('complementoOrigem').value;
-  const bairroOrigem = document.getElementById('bairroOrigem').value.trim().toLowerCase();
+  const bairroOrigem = normalizeBairro(document.getElementById('bairroOrigem').value);
   const cepDestino = document.getElementById('cepDestino').value.replace(/\D/g, '');
   const ruaDestino = document.getElementById('ruaDestino').value;
   const numeroDestino = document.getElementById('numeroDestino').value;
   const complementoDestino = document.getElementById('complementoDestino').value;
-  const bairroDestino = document.getElementById('bairroDestino').value.trim().toLowerCase();
+  const bairroDestino = normalizeBairro(document.getElementById('bairroDestino').value);
   const data = document.getElementById('data').value;
   const horario = document.getElementById('horario').value;
   const nome = document.getElementById('nome').value;
@@ -163,13 +182,13 @@ async function calcularFrete() {
   try {
     let coordsOrigem = bairrosCoords[bairroOrigem];
     if (!coordsOrigem) {
-      alert('Bairro de origem não mapeado. Usando coordenadas do Centro para estimativa.');
+      alert('Bairro de origem não reconhecido. Usando Centro para estimativa. Bairros disponíveis: Centro, Campo do Galvão, Vila Paraíba, Jardim do Vale, entre outros.');
       coordsOrigem = bairrosCoords['centro'];
     }
 
     let coordsDestino = bairrosCoords[bairroDestino];
     if (!coordsDestino) {
-      alert('Bairro de destino não mapeado. Usando coordenadas do Centro para estimativa.');
+      alert('Bairro de destino não reconhecido. Usando Centro para estimativa. Bairros disponíveis: Centro, Campo do Galvão, Vila Paraíba, Jardim do Vale, entre outros.');
       coordsDestino = bairrosCoords['centro'];
     }
 
