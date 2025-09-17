@@ -43,47 +43,8 @@ async function preencherEndereco(tipo) {
     bairroInput.value = data.bairro || '';
   } catch (error) {
     console.error('Erro ao preencher endereço:', error);
-    alert(error.message);
-    cepInput.value = '';
-    ruaInput.value = '';
-    bairroInput.value = '';
+    alert('Erro ao buscar CEP: ' + error.message + '. Preencha rua e bairro manualmente.');
   }
-}
-
-async function getCoordenadas(cep) {
-  try {
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
-    if (data.erro || data.localidade !== 'Guaratinguetá' || data.uf !== 'SP') {
-      throw new Error('CEP inválido ou fora de Guaratinguetá');
-    }
-
-    const coords = {
-      '12500000': { lat: -22.8163, lng: -45.1925 }, // Centro
-      '12505000': { lat: -22.8200, lng: -45.1900 }, // Campo do Galvão
-      '12510000': { lat: -22.8100, lng: -45.2000 }, // Pedregulho
-      '12515000': { lat: -22.8250, lng: -45.1850 }, // Vila Paraíba
-    };
-    if (!coords[cep]) {
-      console.warn(`CEP ${cep} não mapeado, usando coordenadas do centro de Guaratinguetá`);
-      return { lat: -22.8163, lng: -45.1925 }; // Fallback para centro
-    }
-    return coords[cep];
-  } catch (error) {
-    console.error('Erro ao buscar coordenadas:', error);
-    throw new Error('Erro ao buscar CEP: ' + error.message);
-  }
-}
-
-function haversineDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Raio da Terra em km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
 }
 
 async function calcularFrete() {
@@ -110,55 +71,75 @@ async function calcularFrete() {
     alert('Selecione pelo menos um item ou descreva outros!');
     return;
   }
-  if (!cepOrigem) alert('Preencha o CEP de origem!');
-  else if (!ruaOrigem) alert('Preencha a rua de origem!');
-  else if (!numeroOrigem) alert('Preencha o número de origem!');
-  else if (!bairroOrigem) alert('Preencha o bairro de origem!');
-  else if (!cepDestino) alert('Preencha o CEP de destino!');
-  else if (!ruaDestino) alert('Preencha a rua de destino!');
-  else if (!numeroDestino) alert('Preencha o número de destino!');
-  else if (!bairroDestino) alert('Preencha o bairro de destino!');
-  else if (!data) alert('Preencha a data!');
-  else if (!horario) alert('Preencha o horário!');
-  else if (!nome) alert('Preencha o nome!');
-  else if (!telefone) alert('Preencha o telefone!');
-  else {
-    try {
-      const origemCoords = await getCoordenadas(cepOrigem);
-      const destinoCoords = await getCoordenadas(cepDestino);
-      const km = haversineDistance(origemCoords.lat, origemCoords.lng, destinoCoords.lat, destinoCoords.lng);
-      const preco = getPreco(km);
-      const mensagem = `Solicitação de Frete:
+  if (!cepOrigem) {
+    alert('Preencha o CEP de origem!');
+    return;
+  }
+  if (!ruaOrigem) {
+    alert('Preencha a rua de origem!');
+    return;
+  }
+  if (!numeroOrigem) {
+    alert('Preencha o número de origem!');
+    return;
+  }
+  if (!bairroOrigem) {
+    alert('Preencha o bairro de origem!');
+    return;
+  }
+  if (!cepDestino) {
+    alert('Preencha o CEP de destino!');
+    return;
+  }
+  if (!ruaDestino) {
+    alert('Preencha a rua de destino!');
+    return;
+  }
+  if (!numeroDestino) {
+    alert('Preencha o número de destino!');
+    return;
+  }
+  if (!bairroDestino) {
+    alert('Preencha o bairro de destino!');
+    return;
+  }
+  if (!data) {
+    alert('Preencha a data!');
+    return;
+  }
+  if (!horario) {
+    alert('Preencha o horário!');
+    return;
+  }
+  if (!nome) {
+    alert('Preencha o nome!');
+    return;
+  }
+  if (!telefone) {
+    alert('Preencha o telefone!');
+    return;
+  }
+
+  try {
+    const mensagem = `Solicitação de Frete:
 - Itens: ${itens.join(', ')}${outros ? `, Outros: ${outros}` : ''}
 - Origem: ${ruaOrigem}, ${numeroOrigem}${complementoOrigem ? `, ${complementoOrigem}` : ''}, ${bairroOrigem}, CEP ${cepOrigem}
 - Destino: ${ruaDestino}, ${numeroDestino}${complementoDestino ? `, ${complementoDestino}` : ''}, ${bairroDestino}, CEP ${cepDestino}
 - Data: ${data}
 - Horário: ${horario}
 - Nome: ${nome}
-- Telefone: ${telefone}
-- Distância estimada: ${km.toFixed(2)} km
-- Preço estimado: R$${preco}`;
+- Telefone: ${telefone}`;
 
-      console.log('Mensagem gerada:', mensagem); // Para debug
-      const numeroWhatsapp = '5512974042344'; // Número de teste
-      const url = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${encodeURIComponent(mensagem)}`;
-      window.open(url, '_blank');
+    console.log('Mensagem gerada:', mensagem); // Para debug
+    const numeroWhatsapp = '5512974042344'; // Número de teste
+    const url = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
 
-      document.getElementById('resultado').textContent = `Preço: R$${preco} | Mensagem enviada!`;
-    } catch (error) {
-      console.error('Erro ao calcular frete:', error);
-      alert('Erro: ' + error.message);
-    }
+    document.getElementById('resultado').textContent = 'Mensagem enviada para o WhatsApp!';
+  } catch (error) {
+    console.error('Erro ao enviar para WhatsApp:', error);
+    alert('Erro ao enviar para WhatsApp: ' + error.message);
   }
-}
-
-function getPreco(km) {
-  for (let faixa of faixas) {
-    if (km >= faixa.min && km < faixa.max) {
-      return faixa.preco;
-    }
-  }
-  return 0;
 }
 
 function loginAdmin() {
