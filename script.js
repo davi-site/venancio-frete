@@ -75,7 +75,10 @@ const bairrosCoords = {
   'residencial santa rita': { lat: -22.8120, lng: -45.1850 },
   'pedregulho': { lat: -22.8130, lng: -45.1900 },
   'chácara sábia': { lat: -22.8250, lng: -45.1650 },
-  'chacara sabia': { lat: -22.8250, lng: -45.1650 }
+  'chacara sabia': { lat: -22.8250, lng: -45.1650 },
+  'vila molina': { lat: -22.8170, lng: -45.1880 },
+  'vila são josé': { lat: -22.8140, lng: -45.1920 },
+  'vila sao jose': { lat: -22.8140, lng: -45.1920 }
 };
 
 function normalizeBairro(bairro) {
@@ -87,7 +90,7 @@ function normalizeBairro(bairro) {
     .trim();
 }
 
-async function validarBairro(tipo, cep, bairro) {
+async function validarBairro(tipo, cep, bairro, bairroInputElement) {
   const normalizedBairro = normalizeBairro(bairro);
   if (bairrosCoords[normalizedBairro]) {
     return normalizedBairro;
@@ -101,15 +104,16 @@ async function validarBairro(tipo, cep, bairro) {
     }
     const bairroViaCEP = normalizeBairro(data.bairro || '');
     if (bairroViaCEP && bairrosCoords[bairroViaCEP]) {
+      bairroInputElement.value = data.bairro; // Corrige o campo automaticamente
       return bairroViaCEP;
     }
   } catch (error) {
     console.error('Erro ao validar bairro com ViaCEP:', error);
   }
 
-  const bairrosDisponiveis = Object.keys(bairrosCoords).filter(b => !b.includes(' ')).join(', ');
-  alert(`Não encontrei o bairro "${bairro}" para ${tipo}. Verifique se preencheu corretamente. Bairros disponíveis: ${bairrosDisponiveis}.`);
-  throw new Error('Bairro não mapeado');
+  const bairrosDisponiveis = Object.keys(bairrosCoords).filter(b => !b.includes(' ')).slice(0, 5).join(', ') + ', entre outros';
+  alert(`Não encontrei o bairro "${bairro}" para ${tipo}. Verifique se o CEP e o bairro estão corretos. Bairros disponíveis: ${bairrosDisponiveis}. Usando Centro para estimativa.`);
+  return 'centro'; // Fallback para Centro
 }
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
@@ -142,12 +146,14 @@ async function calcularFrete() {
   const ruaOrigem = document.getElementById('ruaOrigem').value;
   const numeroOrigem = document.getElementById('numeroOrigem').value;
   const complementoOrigem = document.getElementById('complementoOrigem').value;
-  const bairroOrigemInput = document.getElementById('bairroOrigem').value;
+  const bairroOrigemInput = document.getElementById('bairroOrigem');
+  const bairroOrigemValue = bairroOrigemInput.value;
   const cepDestino = document.getElementById('cepDestino').value.replace(/\D/g, '');
   const ruaDestino = document.getElementById('ruaDestino').value;
   const numeroDestino = document.getElementById('numeroDestino').value;
   const complementoDestino = document.getElementById('complementoDestino').value;
-  const bairroDestinoInput = document.getElementById('bairroDestino').value;
+  const bairroDestinoInput = document.getElementById('bairroDestino');
+  const bairroDestinoValue = bairroDestinoInput.value;
   const data = document.getElementById('data').value;
   const horario = document.getElementById('horario').value;
   const nome = document.getElementById('nome').value;
@@ -170,7 +176,7 @@ async function calcularFrete() {
     alert('Preencha o número de origem!');
     return;
   }
-  if (!bairroOrigemInput) {
+  if (!bairroOrigemValue) {
     alert('Preencha o bairro de origem!');
     return;
   }
@@ -186,7 +192,7 @@ async function calcularFrete() {
     alert('Preencha o número de destino!');
     return;
   }
-  if (!bairroDestinoInput) {
+  if (!bairroDestinoValue) {
     alert('Preencha o bairro de destino!');
     return;
   }
@@ -208,8 +214,8 @@ async function calcularFrete() {
   }
 
   try {
-    const bairroOrigem = await validarBairro('origem', cepOrigem, bairroOrigemInput);
-    const bairroDestino = await validarBairro('destino', cepDestino, bairroDestinoInput);
+    const bairroOrigem = await validarBairro('origem', cepOrigem, bairroOrigemValue, bairroOrigemInput);
+    const bairroDestino = await validarBairro('destino', cepDestino, bairroDestinoValue, bairroDestinoInput);
 
     const coordsOrigem = bairrosCoords[bairroOrigem];
     const coordsDestino = bairrosCoords[bairroDestino];
